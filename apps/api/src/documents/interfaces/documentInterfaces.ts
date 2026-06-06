@@ -32,3 +32,10 @@ export interface AuditEvent {
   metadata: Record<string, unknown>;
   createdAt: string;
 }
+
+export interface CreateStoredDocumentInput {
+  redactedText: string;
+  key: string;
+  redactions: RedactionEntry[];
+  metadata?: DocumentMetadata;
+}

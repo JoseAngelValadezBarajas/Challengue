@@ -2,42 +2,23 @@ import Database from "better-sqlite3";
 import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import type { RedactionEntry } from "@meltwater-redaction/domain";
-import { normalizeRedactedTerm } from "./normalization.js";
-import type { AuditEvent, DocumentMetadata, DocumentSearchResult, StoredDocument, StoredDocumentWithKey } from "./types.js";
-
-interface DocumentRow {
-  id: string;
-  title: string | null;
-  classification: string | null;
-  owner_id: string | null;
-  redacted_text: string;
-  restoration_key: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface RedactionRow {
-  redaction_index: number;
-  start_offset: number;
-  end_offset: number;
-  term: string;
-  original: string;
-}
-
-interface AuditRow {
-  id: string;
-  document_id: string | null;
-  action: string;
-  metadata: string;
-  created_at: string;
-}
+import { DOCUMENT_AUDIT_ACTIONS, MEMORY_SQLITE_PATH } from "../constants/documentConstants.js";
+import type {
+  AuditEvent,
+  CreateStoredDocumentInput,
+  DocumentSearchResult,
+  StoredDocument,
+  StoredDocumentWithKey,
+} from "../interfaces/documentInterfaces.js";
+import { mapAuditRow, mapDocumentRow, mapRedactionRow } from "../mappers/documentMappers.js";
+import type { AuditRow, DocumentRow, RedactionRow } from "../models/sqliteRows.js";
+import { normalizeRedactedTerm } from "../normalization.js";
 
 export class SqliteDocumentRepository {
   private readonly db: Database.Database;
 
   constructor(databasePath: string) {
-    if (databasePath !== ":memory:") {
+    if (databasePath !== MEMORY_SQLITE_PATH) {
       mkdirSync(dirname(databasePath), { recursive: true });
     }
 
@@ -46,12 +27,7 @@ export class SqliteDocumentRepository {
     this.migrate();
   }
 
-  createDocument(input: {
-    redactedText: string;
-    key: string;
-    redactions: RedactionEntry[];
-    metadata?: DocumentMetadata;
-  }): StoredDocumentWithKey {
+  createDocument(input: CreateStoredDocumentInput): StoredDocumentWithKey {
     const now = new Date().toISOString();
     const id = randomUUID();
     const insertDocument = this.db.prepare(`
@@ -91,7 +67,7 @@ export class SqliteDocumentRepository {
         });
       }
 
-      this.recordAuditEvent("DOCUMENT_REDACTED", id, {
+      this.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.REDACTED, id, {
         redactionCount: input.redactions.length,
         classification: input.metadata?.classification ?? null,
       });
@@ -118,11 +94,11 @@ export class SqliteDocumentRepository {
       return null;
     }
 
-    this.recordAuditEvent("DOCUMENT_READ", id, {});
-    return mapDocument(row);
+    this.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.READ, id, {});
+    return mapDocumentRow(row);
   }
 
-  getDocumentRedactions(id: string): RedactionEntry[] | null {
+  getDocumentRedactions(id: string) {
     const exists = this.db.prepare("SELECT id FROM documents WHERE id = ?").get(id);
 
     if (!exists) {
@@ -133,21 +109,15 @@ export class SqliteDocumentRepository {
       .prepare("SELECT * FROM document_redactions WHERE document_id = ? ORDER BY redaction_index ASC")
       .all(id) as RedactionRow[];
 
-    this.recordAuditEvent("DOCUMENT_REDACTIONS_READ", id, {});
-    return rows.map((row) => ({
-      index: row.redaction_index,
-      start: row.start_offset,
-      end: row.end_offset,
-      term: row.term,
-      original: row.original,
-    }));
+    this.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.REDACTIONS_READ, id, {});
+    return rows.map(mapRedactionRow);
   }
 
   searchDocuments(redactedTerm?: string): DocumentSearchResult {
     if (!redactedTerm) {
       const rows = this.db.prepare("SELECT * FROM documents ORDER BY created_at DESC").all() as DocumentRow[];
-      this.recordAuditEvent("DOCUMENT_SEARCHED", null, { redactedTerm: null, resultCount: rows.length });
-      return { documents: rows.map(mapDocument) };
+      this.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.SEARCHED, null, { redactedTerm: null, resultCount: rows.length });
+      return { documents: rows.map(mapDocumentRow) };
     }
 
     const normalizedTerm = normalizeRedactedTerm(redactedTerm);
@@ -161,8 +131,8 @@ export class SqliteDocumentRepository {
       `)
       .all(normalizedTerm) as DocumentRow[];
 
-    this.recordAuditEvent("DOCUMENT_SEARCHED", null, { redactedTerm: normalizedTerm, resultCount: rows.length });
-    return { documents: rows.map(mapDocument) };
+    this.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.SEARCHED, null, { redactedTerm: normalizedTerm, resultCount: rows.length });
+    return { documents: rows.map(mapDocumentRow) };
   }
 
   getStoredRedactedText(id: string): string | null {
@@ -194,13 +164,7 @@ export class SqliteDocumentRepository {
       .prepare("SELECT * FROM document_audit_events WHERE document_id = ? ORDER BY created_at ASC")
       .all(documentId) as AuditRow[];
 
-    return rows.map((row) => ({
-      id: row.id,
-      documentId: row.document_id,
-      action: row.action,
-      metadata: JSON.parse(row.metadata) as Record<string, unknown>,
-      createdAt: row.created_at,
-    }));
+    return rows.map(mapAuditRow);
   }
 
   private migrate() {
@@ -246,16 +210,4 @@ export class SqliteDocumentRepository {
         ON document_audit_events(document_id);
     `);
   }
-}
-
-function mapDocument(row: DocumentRow): StoredDocument {
-  return {
-    id: row.id,
-    title: row.title,
-    classification: row.classification,
-    ownerId: row.owner_id,
-    redactedText: row.redacted_text,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
 }

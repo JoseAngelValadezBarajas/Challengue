@@ -1,25 +1,8 @@
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
 import { Router } from "express";
-import { z } from "zod";
-import type { SqliteDocumentRepository } from "./sqliteDocumentRepository.js";
-
-const metadataSchema = z
-  .object({
-    title: z.string().min(1).optional(),
-    classification: z.string().min(1).optional(),
-    ownerId: z.string().min(1).optional(),
-  })
-  .optional();
-
-const createStoredRedactionSchema = z.object({
-  terms: z.string().min(1, "terms is required"),
-  documentText: z.string(),
-  metadata: metadataSchema,
-});
-
-const unredactStoredDocumentSchema = z.object({
-  key: z.string().min(1, "key is required"),
-});
+import { DOCUMENT_AUDIT_ACTIONS } from "./constants/documentConstants.js";
+import type { SqliteDocumentRepository } from "./repositories/SqliteDocumentRepository.js";
+import { createStoredRedactionSchema, unredactStoredDocumentSchema } from "./schemas/documentSchemas.js";
 
 export function createDocumentRouter(repository: SqliteDocumentRepository) {
   const router = Router();
@@ -85,11 +68,11 @@ export function createDocumentRouter(repository: SqliteDocumentRepository) {
       }
 
       const result = unredactDocument(payload.key, redactedText);
-      repository.recordAuditEvent("DOCUMENT_UNREDACTED", request.params.id, {});
+      repository.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.UNREDACTED, request.params.id, {});
       response.json(result);
     } catch (error) {
       if (error instanceof RedactionError) {
-        repository.recordAuditEvent("DOCUMENT_UNREDACTION_FAILED", request.params.id, { code: error.code });
+        repository.recordAuditEvent(DOCUMENT_AUDIT_ACTIONS.UNREDACTION_FAILED, request.params.id, { code: error.code });
       }
 
       next(error);

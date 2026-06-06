@@ -1,13 +1,14 @@
-import { RedactionError } from "./types.js";
+import { REDACTION_KEY_VERSION } from "./constants/redactionConstants.js";
+import { RedactionError } from "./errors/RedactionError.js";
 
 interface EncodedKey {
-  version: 1;
+  version: typeof REDACTION_KEY_VERSION;
   values: string[];
 }
 
 export function encodeRedactionKey(values: string[]): string {
   const payload: EncodedKey = {
-    version: 1,
+    version: REDACTION_KEY_VERSION,
     values,
   };
 
@@ -20,7 +21,7 @@ export function decodeRedactionKey(key: string): string[] {
     const payload = JSON.parse(decoded) as Partial<EncodedKey>;
 
     if (
-      payload.version !== 1 ||
+      payload.version !== REDACTION_KEY_VERSION ||
       !Array.isArray(payload.values) ||
       !payload.values.every((value) => typeof value === "string")
     ) {

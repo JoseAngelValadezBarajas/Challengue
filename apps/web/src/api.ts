@@ -1,35 +1,20 @@
+import type {
+  RedactionResponse,
+  StoreRedactedDocumentInput,
+  StoredDocument,
+  StoredDocumentWithKey,
+  UnredactionResponse,
+} from "./interfaces/apiInterfaces.js";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
-export interface RedactionResponse {
-  redactedText: string;
-  key: string;
-  redactions: Array<{
-    index: number;
-    start: number;
-    end: number;
-    term: string;
-    original: string;
-  }>;
-}
-
-export interface UnredactionResponse {
-  unredactedText: string;
-}
-
-export interface StoredDocument {
-  id: string;
-  title: string | null;
-  classification: string | null;
-  ownerId: string | null;
-  redactedText: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface StoredDocumentWithKey extends StoredDocument {
-  key: string;
-  redactions: RedactionResponse["redactions"];
-}
+export type {
+  RedactionEntry,
+  RedactionResponse,
+  StoredDocument,
+  StoredDocumentWithKey,
+  UnredactionResponse,
+} from "./interfaces/apiInterfaces.js";
 
 export async function redactDocument(terms: string, documentText: string): Promise<RedactionResponse> {
   return postJson("/redactions", { terms, documentText });
@@ -39,15 +24,7 @@ export async function unredactDocument(key: string, documentText: string): Promi
   return postJson("/unredactions", { key, documentText });
 }
 
-export async function storeRedactedDocument(input: {
-  terms: string;
-  documentText: string;
-  metadata: {
-    title?: string;
-    classification?: string;
-    ownerId?: string;
-  };
-}): Promise<StoredDocumentWithKey> {
+export async function storeRedactedDocument(input: StoreRedactedDocumentInput): Promise<StoredDocumentWithKey> {
   return postJson("/documents/redactions", input);
 }
 

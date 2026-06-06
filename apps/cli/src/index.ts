@@ -1,15 +1,7 @@
 #!/usr/bin/env node
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
-
-type Command = "redact" | "unredact";
-
-interface CliOptions {
-  command?: Command;
-  terms?: string;
-  text?: string;
-  key?: string;
-  json: boolean;
-}
+import { CLI_USAGE, REDACT_USAGE, UNREDACT_USAGE } from "./constants/cliConstants.js";
+import type { CliOptions } from "./interfaces/cliInterfaces.js";
 
 function main(argv: string[]) {
   const options = parseArgs(argv);
@@ -17,7 +9,7 @@ function main(argv: string[]) {
   try {
     if (options.command === "redact") {
       if (!options.terms || options.text === undefined) {
-        throw new Error("Usage: redact --terms <terms> --text <document> [--json]");
+        throw new Error(REDACT_USAGE);
       }
 
       const result = redactDocument(options.terms, options.text);
@@ -31,7 +23,7 @@ function main(argv: string[]) {
 
     if (options.command === "unredact") {
       if (!options.key || options.text === undefined) {
-        throw new Error("Usage: unredact --key <key> --text <document> [--json]");
+        throw new Error(UNREDACT_USAGE);
       }
 
       const result = unredactDocument(options.key, options.text);
@@ -39,7 +31,7 @@ function main(argv: string[]) {
       return;
     }
 
-    throw new Error("Usage: redaction <redact|unredact> [options]");
+    throw new Error(CLI_USAGE);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown CLI error.";
     const code = error instanceof RedactionError ? error.code : "CLI_ERROR";

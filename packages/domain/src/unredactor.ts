@@ -1,13 +1,13 @@
+import { REDACTION_MASK } from "./constants/redactionConstants.js";
+import { RedactionError } from "./errors/RedactionError.js";
+import type { UnredactionResult } from "./interfaces/redactionInterfaces.js";
 import { decodeRedactionKey } from "./keyCodec.js";
-import { RedactionError, type UnredactionResult } from "./types.js";
-
-const MASK = "XXXX";
 
 export function unredactDocument(key: string, documentText: string): UnredactionResult {
   const values = decodeRedactionKey(key);
   let replacementIndex = 0;
 
-  const unredactedText = documentText.replaceAll(MASK, () => {
+  const unredactedText = documentText.replaceAll(REDACTION_MASK, () => {
     const replacement = values[replacementIndex];
 
     if (replacement === undefined) {

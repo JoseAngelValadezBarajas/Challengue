@@ -1,8 +1,7 @@
+import { REDACTION_MASK } from "./constants/redactionConstants.js";
 import { encodeRedactionKey } from "./keyCodec.js";
 import { parseTerms } from "./termParser.js";
-import type { RedactionEntry, RedactionResult } from "./types.js";
-
-const MASK = "XXXX";
+import type { RedactionEntry, RedactionResult } from "./interfaces/redactionInterfaces.js";
 
 interface Match {
   start: number;
@@ -67,7 +66,7 @@ function applyMatches(documentText: string, matches: Match[]): string {
 
   for (const match of matches) {
     redactedText += documentText.slice(cursor, match.start);
-    redactedText += MASK;
+    redactedText += REDACTION_MASK;
     cursor = match.end;
   }
 

@@ -2,23 +2,16 @@ import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import { randomUUID } from "node:crypto";
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
-import { ZodError, z } from "zod";
+import { ZodError } from "zod";
+import { API_SERVICE_NAME, API_STORAGE_ENGINE, API_VERSION } from "./constants/apiConstants.js";
+import { DEFAULT_SQLITE_PATH } from "./documents/constants/documentConstants.js";
 import { createDocumentRouter } from "./documents/routes.js";
-import { SqliteDocumentRepository } from "./documents/sqliteDocumentRepository.js";
-
-const redactRequestSchema = z.object({
-  terms: z.string().min(1, "terms is required"),
-  documentText: z.string(),
-});
-
-const unredactRequestSchema = z.object({
-  key: z.string().min(1, "key is required"),
-  documentText: z.string(),
-});
+import { SqliteDocumentRepository } from "./documents/repositories/SqliteDocumentRepository.js";
+import { redactRequestSchema, unredactRequestSchema } from "./schemas/redactionSchemas.js";
 
 export function createApp(options: { databasePath?: string } = {}) {
   const app = express();
-  const documentRepository = new SqliteDocumentRepository(options.databasePath ?? process.env.SQLITE_PATH ?? "data/redactions.sqlite");
+  const documentRepository = new SqliteDocumentRepository(options.databasePath ?? process.env.SQLITE_PATH ?? DEFAULT_SQLITE_PATH);
 
   app.use(cors());
   app.use((request, response, next) => {
@@ -50,9 +43,9 @@ export function createApp(options: { databasePath?: string } = {}) {
   app.get("/health", (_request, response) => {
     response.json({
       status: "ok",
-      service: "redaction-api",
-      version: "1.0.0",
-      storage: "sqlite",
+      service: API_SERVICE_NAME,
+      version: API_VERSION,
+      storage: API_STORAGE_ENGINE,
     });
   });
 

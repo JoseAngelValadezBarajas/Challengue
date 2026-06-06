@@ -1,12 +1,6 @@
-import type { RedactionTerm } from "./types.js";
-import { RedactionError } from "./types.js";
-
-const QUOTE_PAIRS = new Map([
-  ['"', '"'],
-  ["'", "'"],
-  ["\u201c", "\u201d"],
-  ["\u2018", "\u2019"],
-]);
+import { QUOTE_PAIRS } from "./constants/redactionConstants.js";
+import { RedactionError } from "./errors/RedactionError.js";
+import type { RedactionTerm } from "./interfaces/redactionInterfaces.js";
 
 export function parseTerms(input: string): RedactionTerm[] {
   const terms: RedactionTerm[] = [];
