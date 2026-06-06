@@ -106,6 +106,10 @@ See `docs/technical-walkthrough.md` for the process, trade-offs, edge cases, and
 
 See `docs/submission-notes.md` for reviewer-oriented submission notes.
 
+## CI
+
+GitHub Actions runs install, lint, tests, build, OpenAPI validation, critical audit checks, and Docker Compose config validation on pushes and pull requests to `main` or `master`.
+
 ## Security Note
 
 The restoration key is deliberately not secure because the assignment states that true cryptography is not required. Base64URL is encoding, not encryption. A production system should keep restoration material encrypted, access-controlled, audited, and separate from search indexes.
