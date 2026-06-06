@@ -49,6 +49,11 @@ describe("redaction API", () => {
     const response = await request(app).get("/health").set("x-request-id", "demo-request-1").expect(200);
 
     expect(response.header["x-request-id"]).toBe("demo-request-1");
+    expect(response.body).toMatchObject({
+      status: "ok",
+      service: "redaction-api",
+      storage: "sqlite",
+    });
   });
 
   it("stores and retrieves redacted documents", async () => {

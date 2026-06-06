@@ -21,6 +21,16 @@ npm run all
 
 The API runs on `http://localhost:4000` by default. The web app runs on the Vite URL printed by `npm run dev:web`.
 
+## Demo In 5 Minutes
+
+1. Run `npm run setup`.
+2. Run `npm run all`.
+3. Open `http://127.0.0.1:5173`.
+4. Use `Redact` to mask a document and generate a key.
+5. Use `Send to unredact` to restore the generated document.
+6. Use `Documents` to store a redacted document in SQLite and search by redacted term.
+7. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
+
 ## Docker Demo
 
 ```bash
@@ -86,9 +96,15 @@ curl -X POST http://localhost:4000/documents/<document-id>/unredactions \
 
 See `docs/openapi.yaml` for the OpenAPI 3.1 contract.
 
+```bash
+npm run openapi:validate
+```
+
 ## Technical Discussion
 
 See `docs/technical-walkthrough.md` for the process, trade-offs, edge cases, and production-hardening discussion.
+
+See `docs/submission-notes.md` for reviewer-oriented submission notes.
 
 ## Security Note
 

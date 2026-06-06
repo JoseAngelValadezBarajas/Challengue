@@ -48,7 +48,12 @@ export function createApp(options: { databasePath?: string } = {}) {
   });
 
   app.get("/health", (_request, response) => {
-    response.json({ status: "ok" });
+    response.json({
+      status: "ok",
+      service: "redaction-api",
+      version: "1.0.0",
+      storage: "sqlite",
+    });
   });
 
   app.post("/redactions", (request, response, next) => {
