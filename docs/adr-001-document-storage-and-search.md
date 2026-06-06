@@ -55,5 +55,7 @@ All endpoints should require authentication, authorization, request validation, 
 
 - The exercise key is not cryptographic; production should use envelope encryption and KMS-managed keys.
 - Searchability and secrecy are in tension. Index only the minimum necessary normalized terms, and consider hashing terms if exact-match search is sufficient.
+- If exact-match search is enough, store keyed hashes of normalized terms in the search index and keep plaintext terms in an encrypted redaction store.
+- Treat unredaction as privileged access with explicit authorization checks, audit events, and alerting for unusual restore patterns.
 - Event-driven indexing makes writes resilient and scalable, but introduces eventual consistency.
 - PostgreSQL can support a small-scale version with indexes or `tsvector`; OpenSearch is preferable once query volume, ranking, or operational search features matter.

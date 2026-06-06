@@ -44,4 +44,10 @@ describe("redaction API", () => {
 
     expect(response.body.error.code).toBe("INVALID_KEY");
   });
+
+  it("echoes caller request ids for traceability", async () => {
+    const response = await request(app).get("/health").set("x-request-id", "demo-request-1").expect(200);
+
+    expect(response.header["x-request-id"]).toBe("demo-request-1");
+  });
 });

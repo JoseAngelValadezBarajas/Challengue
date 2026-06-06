@@ -21,6 +21,14 @@ npm run all
 
 The API runs on `http://localhost:4000` by default. The web app runs on the Vite URL printed by `npm run dev:web`.
 
+## Docker Demo
+
+```bash
+docker compose up --build
+```
+
+Docker exposes the API on `http://localhost:4000` and the web app on `http://localhost:5173`.
+
 ## CLI Demo
 
 ```bash
@@ -47,9 +55,24 @@ curl -X POST http://localhost:4000/unredactions \
 ## Design Decisions
 
 - Redaction matching is case-sensitive by default.
+- Keywords are separated by spaces or commas.
+- Phrases can use straight quotes (`"`, `'`) or typographic quotes.
 - Phrases and longer terms are matched before shorter terms to avoid partial replacements.
 - The unredaction key is intentionally not cryptographic. It is a Base64URL-encoded payload containing the original redacted values in document order.
 - The core logic is pure TypeScript in `packages/domain` so the CLI, API, and UI all exercise the same behavior.
+- The API includes request IDs in headers and error payloads to make local debugging and production-style tracing easier.
+
+## API Contract
+
+See `docs/openapi.yaml` for the OpenAPI 3.1 contract.
+
+## Technical Discussion
+
+See `docs/technical-walkthrough.md` for the process, trade-offs, edge cases, and production-hardening discussion.
+
+## Security Note
+
+The restoration key is deliberately not secure because the assignment states that true cryptography is not required. Base64URL is encoding, not encryption. A production system should keep restoration material encrypted, access-controlled, audited, and separate from search indexes.
 
 ## Part 3
 

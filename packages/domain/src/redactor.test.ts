@@ -23,6 +23,15 @@ describe("redactDocument", () => {
     expect(result.redactedText).toBe("XXXX won.");
   });
 
+  it("redacts terms from the assignment example with typographic quotes", () => {
+    const result = redactDocument(
+      "Hello world \u201cBoston Red Sox\u201d, \u2018Pepperoni Pizza\u2019, \u2018Cheese Pizza\u2019, beer",
+      "Hello world watched the Boston Red Sox while eating Cheese Pizza with beer."
+    );
+
+    expect(result.redactedText).toBe("XXXX XXXX watched the XXXX while eating XXXX with XXXX.");
+  });
+
   it("prioritizes longer overlapping terms", () => {
     const result = redactDocument('"Boston Red Sox", Boston', "Boston Red Sox briefing");
 

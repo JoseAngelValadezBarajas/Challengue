@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
+import { randomUUID } from "node:crypto";
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
 import { ZodError, z } from "zod";
 
@@ -17,7 +18,31 @@ export function createApp() {
   const app = express();
 
   app.use(cors());
+  app.use((request, response, next) => {
+    const requestId = request.header("x-request-id") ?? randomUUID();
+    response.locals.requestId = requestId;
+    response.setHeader("x-request-id", requestId);
+    next();
+  });
   app.use(express.json({ limit: "1mb" }));
+  app.use((request, response, next) => {
+    const startedAt = Date.now();
+
+    response.on("finish", () => {
+      console.info(
+        JSON.stringify({
+          event: "http_request",
+          method: request.method,
+          path: request.path,
+          requestId: response.locals.requestId,
+          statusCode: response.statusCode,
+          durationMs: Date.now() - startedAt,
+        })
+      );
+    });
+
+    next();
+  });
 
   app.get("/health", (_request, response) => {
     response.json({ status: "ok" });
@@ -55,6 +80,7 @@ const errorHandler: ErrorRequestHandler = (error, _request, response, next) => {
         code: "VALIDATION_ERROR",
         message: "Request payload is invalid.",
         details: error.flatten(),
+        requestId: response.locals.requestId,
       },
     });
     return;
@@ -65,6 +91,7 @@ const errorHandler: ErrorRequestHandler = (error, _request, response, next) => {
       error: {
         code: error.code,
         message: error.message,
+        requestId: response.locals.requestId,
       },
     });
     return;
@@ -74,6 +101,7 @@ const errorHandler: ErrorRequestHandler = (error, _request, response, next) => {
     error: {
       code: "INTERNAL_SERVER_ERROR",
       message: "An unexpected error occurred.",
+      requestId: response.locals.requestId,
     },
   });
 };

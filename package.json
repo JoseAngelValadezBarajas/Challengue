@@ -13,6 +13,7 @@
     "build": "npm run build --workspaces",
     "dev:api": "npm run dev -w @meltwater-redaction/api",
     "dev:web": "npm run dev -w @meltwater-redaction/web",
+    "dev:web:docker": "npm run dev -w @meltwater-redaction/web -- --host 0.0.0.0",
     "dev:all": "concurrently -n api,web -c cyan,green \"npm run dev:api\" \"npm run dev:web\"",
     "all": "npm run dev:all",
     "test": "vitest run",

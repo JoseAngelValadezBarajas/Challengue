@@ -32,6 +32,17 @@ describe("parseTerms", () => {
     ]);
   });
 
+  it("parses typographic quoted phrases from the assignment examples", () => {
+    expect(parseTerms("Hello world \u201cBoston Red Sox\u201d, \u2018Pepperoni Pizza\u2019, \u2018Cheese Pizza\u2019, beer")).toEqual([
+      { value: "Hello", kind: "keyword" },
+      { value: "world", kind: "keyword" },
+      { value: "Boston Red Sox", kind: "phrase" },
+      { value: "Pepperoni Pizza", kind: "phrase" },
+      { value: "Cheese Pizza", kind: "phrase" },
+      { value: "beer", kind: "keyword" },
+    ]);
+  });
+
   it("parses mixed quoted phrases and keywords", () => {
     expect(parseTerms('Hello world "Boston Red Sox", \'Cheese Pizza\', beer')).toEqual([
       { value: "Hello", kind: "keyword" },

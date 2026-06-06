@@ -1,6 +1,13 @@
 import type { RedactionTerm } from "./types.js";
 import { RedactionError } from "./types.js";
 
+const QUOTE_PAIRS = new Map([
+  ['"', '"'],
+  ["'", "'"],
+  ["\u201c", "\u201d"],
+  ["\u2018", "\u2019"],
+]);
+
 export function parseTerms(input: string): RedactionTerm[] {
   const terms: RedactionTerm[] = [];
   let cursor = 0;
@@ -13,8 +20,9 @@ export function parseTerms(input: string): RedactionTerm[] {
     }
 
     const char = input[cursor];
-    if (char === '"' || char === "'") {
-      const parsed = readQuotedTerm(input, cursor, char);
+    const closingQuote = QUOTE_PAIRS.get(char ?? "");
+    if (closingQuote) {
+      const parsed = readQuotedTerm(input, cursor, closingQuote);
       terms.push({ value: parsed.value, kind: "phrase" });
       cursor = parsed.next;
       continue;
@@ -36,14 +44,14 @@ function skipSeparators(input: string, cursor: number): number {
   return cursor;
 }
 
-function readQuotedTerm(input: string, cursor: number, quote: "'" | '"') {
+function readQuotedTerm(input: string, cursor: number, closingQuote: string) {
   let next = cursor + 1;
   let value = "";
 
   while (next < input.length) {
     const char = input[next];
 
-    if (char === quote) {
+    if (char === closingQuote) {
       const trimmed = value.trim();
       if (!trimmed) {
         throw new RedactionError("Quoted terms cannot be empty.", "INVALID_TERMS");

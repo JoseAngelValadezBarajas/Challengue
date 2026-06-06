@@ -1,11 +1,17 @@
-import { Copy, FileLock2, KeyRound, RotateCcw, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Check, Copy, FileLock2, KeyRound, RotateCcw, ShieldCheck } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { redactDocument, type RedactionResponse, unredactDocument } from "./api.js";
 
 type Mode = "redact" | "unredact";
 
 export function App() {
   const [mode, setMode] = useState<Mode>("redact");
+  const [restoreDraft, setRestoreDraft] = useState({ key: "", documentText: "" });
+
+  function moveToUnredact(result: RedactionResponse) {
+    setRestoreDraft({ key: result.key, documentText: result.redactedText });
+    setMode("unredact");
+  }
 
   return (
     <main className="app-shell">
@@ -32,14 +38,18 @@ export function App() {
           </button>
         </nav>
 
-        {mode === "redact" ? <RedactPanel /> : <UnredactPanel />}
+        {mode === "redact" ? (
+          <RedactPanel onMoveToUnredact={moveToUnredact} />
+        ) : (
+          <UnredactPanel draft={restoreDraft} />
+        )}
       </section>
     </main>
   );
 }
 
-function RedactPanel() {
-  const [terms, setTerms] = useState('Hello world "Boston Red Sox", beer');
+function RedactPanel({ onMoveToUnredact }: { onMoveToUnredact: (result: RedactionResponse) => void }) {
+  const [terms, setTerms] = useState("Hello world \u201cBoston Red Sox\u201d, beer");
   const [documentText, setDocumentText] = useState("Hello world met the Boston Red Sox and ordered beer.");
   const [result, setResult] = useState<RedactionResponse | null>(null);
   const [error, setError] = useState("");
@@ -83,17 +93,31 @@ function RedactPanel() {
         resultText={result?.redactedText}
         keyText={result?.key}
         footer={result ? `${result.redactions.length} redaction${result.redactions.length === 1 ? "" : "s"} applied` : ""}
+        action={
+          result ? (
+            <button className="secondary-action" onClick={() => onMoveToUnredact(result)} type="button">
+              <ArrowRight size={18} aria-hidden="true" />
+              Send to unredact
+            </button>
+          ) : null
+        }
       />
+      {result?.redactions.length ? <RedactionTable redactions={result.redactions} /> : null}
     </form>
   );
 }
 
-function UnredactPanel() {
-  const [key, setKey] = useState("");
-  const [documentText, setDocumentText] = useState("");
+function UnredactPanel({ draft }: { draft: { key: string; documentText: string } }) {
+  const [key, setKey] = useState(draft.key);
+  const [documentText, setDocumentText] = useState(draft.documentText);
   const [unredactedText, setUnredactedText] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setKey(draft.key);
+    setDocumentText(draft.documentText);
+  }, [draft]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -143,20 +167,30 @@ function ResultPanel({
   resultText,
   keyText,
   footer,
+  action,
 }: {
   title: string;
   emptyText: string;
   resultText?: string | undefined;
   keyText?: string | undefined;
   footer?: string | undefined;
+  action?: ReactNode;
 }) {
+  const [copied, setCopied] = useState<"key" | "result" | "">("");
+
+  async function copy(value: string, kind: "key" | "result") {
+    await navigator.clipboard.writeText(value);
+    setCopied(kind);
+    window.setTimeout(() => setCopied(""), 1500);
+  }
+
   return (
     <aside className="result-panel">
       <div className="result-header">
         <h2>{title}</h2>
         {resultText ? (
-          <button className="icon-button" onClick={() => void navigator.clipboard.writeText(resultText)} type="button">
-            <Copy size={18} aria-hidden="true" />
+          <button className="icon-button" onClick={() => void copy(resultText, "result")} type="button">
+            {copied === "result" ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
             <span className="sr-only">Copy result</span>
           </button>
         ) : null}
@@ -168,8 +202,8 @@ function ResultPanel({
         <div className="key-block">
           <div className="result-header">
             <h3>Key</h3>
-            <button className="icon-button" onClick={() => void navigator.clipboard.writeText(keyText)} type="button">
-              <Copy size={18} aria-hidden="true" />
+            <button className="icon-button" onClick={() => void copy(keyText, "key")} type="button">
+              {copied === "key" ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
               <span className="sr-only">Copy key</span>
             </button>
           </div>
@@ -178,6 +212,39 @@ function ResultPanel({
       ) : null}
 
       {footer ? <p className="result-footer">{footer}</p> : null}
+      {action}
     </aside>
+  );
+}
+
+function RedactionTable({ redactions }: { redactions: RedactionResponse["redactions"] }) {
+  return (
+    <section className="redaction-table" aria-label="Applied redactions">
+      <h2>Applied redactions</h2>
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Term</th>
+              <th>Original</th>
+              <th>Range</th>
+            </tr>
+          </thead>
+          <tbody>
+            {redactions.map((redaction) => (
+              <tr key={`${redaction.index}-${redaction.start}`}>
+                <td>{redaction.index + 1}</td>
+                <td>{redaction.term}</td>
+                <td>{redaction.original}</td>
+                <td>
+                  {redaction.start}-{redaction.end}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
