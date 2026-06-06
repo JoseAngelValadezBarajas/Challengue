@@ -9,9 +9,12 @@
     "apps/*"
   ],
   "scripts": {
+    "setup": "npm install",
     "build": "npm run build --workspaces",
     "dev:api": "npm run dev -w @meltwater-redaction/api",
     "dev:web": "npm run dev -w @meltwater-redaction/web",
+    "dev:all": "concurrently -n api,web -c cyan,green \"npm run dev:api\" \"npm run dev:web\"",
+    "all": "npm run dev:all",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
@@ -25,6 +28,7 @@
     "@types/node": "^22.15.30",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.28.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.1",

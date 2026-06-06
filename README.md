@@ -10,14 +10,13 @@ Professional TypeScript implementation of the redaction exercise with a shared d
 ## Install
 
 ```bash
-npm install
+npm run setup
 ```
 
 ## Run
 
 ```bash
-npm run dev:api
-npm run dev:web
+npm run all
 ```
 
 The API runs on `http://localhost:4000` by default. The web app runs on the Vite URL printed by `npm run dev:web`.
