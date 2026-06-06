@@ -11,11 +11,12 @@ RUN npm ci
 
 FROM deps AS source
 COPY . .
+RUN npm run build
 
 FROM source AS api
 EXPOSE 4000
-CMD ["npm", "run", "dev:api"]
+CMD ["npm", "run", "start", "-w", "@meltwater-redaction/api"]
 
 FROM source AS web
 EXPOSE 5173
-CMD ["npm", "run", "dev:web:docker"]
+CMD ["npm", "run", "preview", "-w", "@meltwater-redaction/web", "--", "--host", "0.0.0.0", "--port", "5173"]
