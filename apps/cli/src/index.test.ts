@@ -3,13 +3,12 @@ import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
+const cliCommand = ["--conditions", "development", "--import", "tsx", "apps/cli/src/index.ts"];
 
 describe("redaction CLI", () => {
   it("redacts document text as JSON", async () => {
     const { stdout } = await execFileAsync("node", [
-      "--import",
-      "tsx",
-      "apps/cli/src/index.ts",
+      ...cliCommand,
       "redact",
       "--terms",
       "beer",
@@ -26,9 +25,7 @@ describe("redaction CLI", () => {
 
   it("unredacts document text as JSON", async () => {
     const redaction = await execFileAsync("node", [
-      "--import",
-      "tsx",
-      "apps/cli/src/index.ts",
+      ...cliCommand,
       "redact",
       "--terms",
       "classified",
@@ -39,9 +36,7 @@ describe("redaction CLI", () => {
     const redacted = JSON.parse(redaction.stdout) as { redactedText: string; key: string };
 
     const restoration = await execFileAsync("node", [
-      "--import",
-      "tsx",
-      "apps/cli/src/index.ts",
+      ...cliCommand,
       "unredact",
       "--key",
       redacted.key,
@@ -58,9 +53,7 @@ describe("redaction CLI", () => {
   it("returns a JSON error for invalid keys", async () => {
     await expect(
       execFileAsync("node", [
-        "--import",
-        "tsx",
-        "apps/cli/src/index.ts",
+        ...cliCommand,
         "unredact",
         "--key",
         "invalid",
