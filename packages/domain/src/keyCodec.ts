@@ -1,4 +1,4 @@
-import { REDACTION_KEY_VERSION } from "./constants/redactionConstants.js";
+import { REDACTION_ERROR_CODES, REDACTION_KEY_VERSION } from "./constants/redactionConstants.js";
 import { RedactionError } from "./errors/RedactionError.js";
 
 interface EncodedKey {
@@ -30,6 +30,6 @@ export function decodeRedactionKey(key: string): string[] {
 
     return payload.values;
   } catch {
-    throw new RedactionError("The provided key is invalid.", "INVALID_KEY");
+    throw new RedactionError("The provided key is invalid.", REDACTION_ERROR_CODES.INVALID_KEY);
   }
 }

@@ -1,4 +1,4 @@
-import { QUOTE_PAIRS } from "./constants/redactionConstants.js";
+import { QUOTE_PAIRS, REDACTION_ERROR_CODES } from "./constants/redactionConstants.js";
 import { RedactionError } from "./errors/RedactionError.js";
 import type { RedactionTerm } from "./interfaces/redactionInterfaces.js";
 
@@ -48,7 +48,7 @@ function readQuotedTerm(input: string, cursor: number, closingQuote: string) {
     if (char === closingQuote) {
       const trimmed = value.trim();
       if (!trimmed) {
-        throw new RedactionError("Quoted terms cannot be empty.", "INVALID_TERMS");
+        throw new RedactionError("Quoted terms cannot be empty.", REDACTION_ERROR_CODES.INVALID_TERMS);
       }
 
       return { value: trimmed, next: next + 1 };
@@ -58,7 +58,7 @@ function readQuotedTerm(input: string, cursor: number, closingQuote: string) {
     next += 1;
   }
 
-  throw new RedactionError("Quoted term is missing a closing quote.", "INVALID_TERMS");
+  throw new RedactionError("Quoted term is missing a closing quote.", REDACTION_ERROR_CODES.INVALID_TERMS);
 }
 
 function readBareTerm(input: string, cursor: number) {
@@ -72,7 +72,7 @@ function readBareTerm(input: string, cursor: number) {
 
   const trimmed = value.trim();
   if (!trimmed) {
-    throw new RedactionError("Terms cannot be empty.", "INVALID_TERMS");
+    throw new RedactionError("Terms cannot be empty.", REDACTION_ERROR_CODES.INVALID_TERMS);
   }
 
   return { value: trimmed, next };

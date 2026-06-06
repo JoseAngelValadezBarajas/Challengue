@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
-import { CLI_USAGE, REDACT_USAGE, UNREDACT_USAGE } from "./constants/cliConstants.js";
+import { CLI_ERROR_CODE, CLI_USAGE, REDACT_USAGE, UNREDACT_USAGE } from "./constants/cliConstants.js";
 import type { CliOptions } from "./interfaces/cliInterfaces.js";
 
 function main(argv: string[]) {
@@ -34,7 +34,7 @@ function main(argv: string[]) {
     throw new Error(CLI_USAGE);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown CLI error.";
-    const code = error instanceof RedactionError ? error.code : "CLI_ERROR";
+    const code = error instanceof RedactionError ? error.code : CLI_ERROR_CODE;
 
     if (options.json) {
       console.error(JSON.stringify({ error: { code, message } }, null, 2));

@@ -1,4 +1,6 @@
-export type RedactionErrorCode = "INVALID_TERMS" | "INVALID_KEY" | "PLACEHOLDER_MISMATCH";
+import type { REDACTION_ERROR_CODES } from "../constants/redactionConstants.js";
+
+export type RedactionErrorCode = (typeof REDACTION_ERROR_CODES)[keyof typeof REDACTION_ERROR_CODES];
 
 export interface RedactionTerm {
   value: string;

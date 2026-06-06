@@ -5,8 +5,9 @@ import type {
   StoredDocumentWithKey,
   UnredactionResponse,
 } from "./interfaces/apiInterfaces.js";
+import { API_ENDPOINTS, DEFAULT_API_BASE_URL, UI_MESSAGES } from "./constants/webConstants.js";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL;
 
 export type {
   RedactionEntry,
@@ -17,15 +18,15 @@ export type {
 } from "./interfaces/apiInterfaces.js";
 
 export async function redactDocument(terms: string, documentText: string): Promise<RedactionResponse> {
-  return postJson("/redactions", { terms, documentText });
+  return postJson(API_ENDPOINTS.REDACTIONS, { terms, documentText });
 }
 
 export async function unredactDocument(key: string, documentText: string): Promise<UnredactionResponse> {
-  return postJson("/unredactions", { key, documentText });
+  return postJson(API_ENDPOINTS.UNREDACTIONS, { key, documentText });
 }
 
 export async function storeRedactedDocument(input: StoreRedactedDocumentInput): Promise<StoredDocumentWithKey> {
-  return postJson("/documents/redactions", input);
+  return postJson(API_ENDPOINTS.DOCUMENT_REDACTIONS, input);
 }
 
 export async function searchStoredDocuments(redactedTerm: string): Promise<{ documents: StoredDocument[] }> {
@@ -36,15 +37,15 @@ export async function searchStoredDocuments(redactedTerm: string): Promise<{ doc
   }
 
   const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
-  return getJson(`/documents${suffix}`);
+  return getJson(`${API_ENDPOINTS.DOCUMENTS}${suffix}`);
 }
 
 export async function getStoredDocumentRedactions(documentId: string): Promise<{ redactions: RedactionResponse["redactions"] }> {
-  return getJson(`/documents/${documentId}/redactions`);
+  return getJson(API_ENDPOINTS.documentRedactions(documentId));
 }
 
 export async function unredactStoredDocument(documentId: string, key: string): Promise<UnredactionResponse> {
-  return postJson(`/documents/${documentId}/unredactions`, { key });
+  return postJson(API_ENDPOINTS.documentUnredactions(documentId), { key });
 }
 
 async function getJson<TResponse extends object>(path: string): Promise<TResponse> {
@@ -52,7 +53,7 @@ async function getJson<TResponse extends object>(path: string): Promise<TRespons
   const payload = (await response.json()) as TResponse | { error?: { message?: string } };
 
   if (!response.ok) {
-    throw new Error(("error" in payload && payload.error?.message) || "Request failed.");
+    throw new Error(("error" in payload && payload.error?.message) || UI_MESSAGES.REQUEST_FAILED);
   }
 
   return payload as TResponse;
@@ -70,7 +71,7 @@ async function postJson<TResponse extends object>(path: string, body: unknown): 
   const payload = (await response.json()) as TResponse | { error?: { message?: string } };
 
   if (!response.ok) {
-    throw new Error(("error" in payload && payload.error?.message) || "Request failed.");
+    throw new Error(("error" in payload && payload.error?.message) || UI_MESSAGES.REQUEST_FAILED);
   }
 
   return payload as TResponse;

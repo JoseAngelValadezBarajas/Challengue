@@ -1,13 +1,15 @@
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
 import { Router } from "express";
+import { API_ERROR_CODES, API_ERROR_MESSAGES } from "../constants/apiConstants.js";
 import { DOCUMENT_AUDIT_ACTIONS } from "./constants/documentConstants.js";
+import { DOCUMENT_ROUTES } from "./constants/documentRoutes.js";
 import type { SqliteDocumentRepository } from "./repositories/SqliteDocumentRepository.js";
 import { createStoredRedactionSchema, unredactStoredDocumentSchema } from "./schemas/documentSchemas.js";
 
 export function createDocumentRouter(repository: SqliteDocumentRepository) {
   const router = Router();
 
-  router.post("/redactions", (request, response, next) => {
+  router.post(DOCUMENT_ROUTES.REDACTIONS, (request, response, next) => {
     try {
       const payload = createStoredRedactionSchema.parse(request.body);
       const redaction = redactDocument(payload.terms, payload.documentText);
@@ -25,45 +27,51 @@ export function createDocumentRouter(repository: SqliteDocumentRepository) {
     }
   });
 
-  router.get("/", (request, response) => {
+  router.get(DOCUMENT_ROUTES.ROOT, (request, response) => {
     const redactedTerm = typeof request.query.redactedTerm === "string" ? request.query.redactedTerm : undefined;
 
     response.json(repository.searchDocuments(redactedTerm));
   });
 
-  router.get("/:id", (request, response) => {
+  router.get(DOCUMENT_ROUTES.BY_ID, (request, response) => {
     const document = repository.getDocument(request.params.id);
 
     if (!document) {
-      response.status(404).json({ error: { code: "DOCUMENT_NOT_FOUND", message: "Document was not found." } });
+      response
+        .status(404)
+        .json({ error: { code: API_ERROR_CODES.DOCUMENT_NOT_FOUND, message: API_ERROR_MESSAGES.DOCUMENT_NOT_FOUND } });
       return;
     }
 
     response.json(document);
   });
 
-  router.get("/:id/redactions", (request, response) => {
+  router.get(DOCUMENT_ROUTES.BY_ID_REDACTIONS, (request, response) => {
     const redactions = repository.getDocumentRedactions(request.params.id);
 
     if (!redactions) {
-      response.status(404).json({ error: { code: "DOCUMENT_NOT_FOUND", message: "Document was not found." } });
+      response
+        .status(404)
+        .json({ error: { code: API_ERROR_CODES.DOCUMENT_NOT_FOUND, message: API_ERROR_MESSAGES.DOCUMENT_NOT_FOUND } });
       return;
     }
 
     response.json({ redactions });
   });
 
-  router.get("/:id/audit-events", (request, response) => {
+  router.get(DOCUMENT_ROUTES.BY_ID_AUDIT_EVENTS, (request, response) => {
     response.json({ auditEvents: repository.listAuditEvents(request.params.id) });
   });
 
-  router.post("/:id/unredactions", (request, response, next) => {
+  router.post(DOCUMENT_ROUTES.BY_ID_UNREDACTIONS, (request, response, next) => {
     try {
       const payload = unredactStoredDocumentSchema.parse(request.body);
       const redactedText = repository.getStoredRedactedText(request.params.id);
 
       if (!redactedText) {
-        response.status(404).json({ error: { code: "DOCUMENT_NOT_FOUND", message: "Document was not found." } });
+        response
+          .status(404)
+          .json({ error: { code: API_ERROR_CODES.DOCUMENT_NOT_FOUND, message: API_ERROR_MESSAGES.DOCUMENT_NOT_FOUND } });
         return;
       }
 

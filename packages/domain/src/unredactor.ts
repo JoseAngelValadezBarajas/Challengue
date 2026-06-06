@@ -1,4 +1,4 @@
-import { REDACTION_MASK } from "./constants/redactionConstants.js";
+import { REDACTION_ERROR_CODES, REDACTION_MASK } from "./constants/redactionConstants.js";
 import { RedactionError } from "./errors/RedactionError.js";
 import type { UnredactionResult } from "./interfaces/redactionInterfaces.js";
 import { decodeRedactionKey } from "./keyCodec.js";
@@ -13,7 +13,7 @@ export function unredactDocument(key: string, documentText: string): Unredaction
     if (replacement === undefined) {
       throw new RedactionError(
         "The document has more redaction placeholders than the key can restore.",
-        "PLACEHOLDER_MISMATCH"
+        REDACTION_ERROR_CODES.PLACEHOLDER_MISMATCH
       );
     }
 
@@ -24,7 +24,7 @@ export function unredactDocument(key: string, documentText: string): Unredaction
   if (replacementIndex !== values.length) {
     throw new RedactionError(
       "The key contains more redactions than the document has placeholders.",
-      "PLACEHOLDER_MISMATCH"
+      REDACTION_ERROR_CODES.PLACEHOLDER_MISMATCH
     );
   }
 

@@ -1,6 +1,7 @@
 import { RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { unredactDocument } from "../api.js";
+import { UI_MESSAGES } from "../constants/webConstants.js";
 import { ResultPanel } from "./ResultPanel.js";
 
 interface UnredactPanelProps {
@@ -31,7 +32,7 @@ export function UnredactPanel({ draft }: UnredactPanelProps) {
       const result = await unredactDocument(key, documentText);
       setUnredactedText(result.unredactedText);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to unredact document.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.UNREDACT_FAILED);
     } finally {
       setLoading(false);
     }
@@ -57,7 +58,7 @@ export function UnredactPanel({ draft }: UnredactPanelProps) {
 
       <ResultPanel
         title="Unredacted output"
-        emptyText="Paste a key and redacted text to restore the original document."
+        emptyText={UI_MESSAGES.UNREDACT_EMPTY}
         resultText={unredactedText}
       />
     </form>

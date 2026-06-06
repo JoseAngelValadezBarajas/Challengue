@@ -1,6 +1,7 @@
 import { ArrowRight, FileLock2 } from "lucide-react";
 import { useState } from "react";
 import { redactDocument, type RedactionResponse } from "../api.js";
+import { REDACT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
 import { RedactionTable } from "./RedactionTable.js";
 import { ResultPanel } from "./ResultPanel.js";
 
@@ -9,8 +10,8 @@ interface RedactPanelProps {
 }
 
 export function RedactPanel({ onMoveToUnredact }: RedactPanelProps) {
-  const [terms, setTerms] = useState("Hello world \u201cBoston Red Sox\u201d, beer");
-  const [documentText, setDocumentText] = useState("Hello world met the Boston Red Sox and ordered beer.");
+  const [terms, setTerms] = useState<string>(REDACT_DEMO_DEFAULTS.TERMS);
+  const [documentText, setDocumentText] = useState<string>(REDACT_DEMO_DEFAULTS.DOCUMENT_TEXT);
   const [result, setResult] = useState<RedactionResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,7 @@ export function RedactPanel({ onMoveToUnredact }: RedactPanelProps) {
     try {
       setResult(await redactDocument(terms, documentText));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to redact document.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.REDACT_FAILED);
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ export function RedactPanel({ onMoveToUnredact }: RedactPanelProps) {
 
       <ResultPanel
         title="Redacted output"
-        emptyText="Run a redaction to see the masked document and restoration key."
+        emptyText={UI_MESSAGES.REDACT_EMPTY}
         resultText={result?.redactedText}
         keyText={result?.key}
         footer={result ? `${result.redactions.length} redaction${result.redactions.length === 1 ? "" : "s"} applied` : ""}

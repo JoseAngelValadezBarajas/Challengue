@@ -9,6 +9,7 @@ import {
   type StoredDocumentWithKey,
   unredactStoredDocument,
 } from "../api.js";
+import { DOCUMENT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
 import { RedactionTable } from "./RedactionTable.js";
 
 interface DocumentsPanelProps {
@@ -16,12 +17,12 @@ interface DocumentsPanelProps {
 }
 
 export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
-  const [terms, setTerms] = useState('"Boston Red Sox", beer');
-  const [documentText, setDocumentText] = useState("The Boston Red Sox ordered beer.");
-  const [title, setTitle] = useState("Stored briefing");
-  const [classification, setClassification] = useState("secret");
-  const [ownerId, setOwnerId] = useState("demo-user");
-  const [searchTerm, setSearchTerm] = useState("beer");
+  const [terms, setTerms] = useState<string>(DOCUMENT_DEMO_DEFAULTS.TERMS);
+  const [documentText, setDocumentText] = useState<string>(DOCUMENT_DEMO_DEFAULTS.DOCUMENT_TEXT);
+  const [title, setTitle] = useState<string>(DOCUMENT_DEMO_DEFAULTS.TITLE);
+  const [classification, setClassification] = useState<string>(DOCUMENT_DEMO_DEFAULTS.CLASSIFICATION);
+  const [ownerId, setOwnerId] = useState<string>(DOCUMENT_DEMO_DEFAULTS.OWNER_ID);
+  const [searchTerm, setSearchTerm] = useState<string>(DOCUMENT_DEMO_DEFAULTS.SEARCH_TERM);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
   const [selected, setSelected] = useState<StoredDocumentWithKey | null>(null);
   const [selectedRedactions, setSelectedRedactions] = useState<RedactionResponse["redactions"]>([]);
@@ -49,7 +50,7 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
       setDocuments((current) => [created, ...current.filter((document) => document.id !== created.id)]);
       setStoredRestore("");
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to store document.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.STORE_FAILED);
     } finally {
       setLoading(false);
     }
@@ -64,7 +65,7 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
       const result = await searchStoredDocuments(searchTerm);
       setDocuments(result.documents);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to search documents.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.SEARCH_FAILED);
     } finally {
       setLoading(false);
     }
@@ -79,13 +80,13 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
       const result = await getStoredDocumentRedactions(document.id);
       setSelectedRedactions(result.redactions);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to load redactions.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.LOAD_REDACTIONS_FAILED);
     }
   }
 
   async function handleStoredUnredact() {
     if (!selected?.key) {
-      setError("The restoration key is only returned when a document is first stored in this demo.");
+      setError(UI_MESSAGES.STORED_KEY_UNAVAILABLE);
       return;
     }
 
@@ -95,7 +96,7 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
       const result = await unredactStoredDocument(selected.id, selected.key);
       setStoredRestore(result.unredactedText);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to restore stored document.");
+      setError(requestError instanceof Error ? requestError.message : UI_MESSAGES.RESTORE_STORED_FAILED);
     }
   }
 
@@ -148,7 +149,7 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
               </button>
             ))
           ) : (
-            <p className="empty-state compact">Store or search documents to inspect the SQLite prototype.</p>
+            <p className="empty-state compact">{UI_MESSAGES.DOCUMENTS_EMPTY}</p>
           )}
         </div>
       </aside>
@@ -180,7 +181,7 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
             {selectedRedactions.length ? <RedactionTable redactions={selectedRedactions} /> : null}
           </>
         ) : (
-          <p className="empty-state">Select a stored document to inspect redactions and restoration behavior.</p>
+          <p className="empty-state">{UI_MESSAGES.STORED_DETAIL_EMPTY}</p>
         )}
       </section>
     </div>
