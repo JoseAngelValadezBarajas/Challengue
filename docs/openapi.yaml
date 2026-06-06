@@ -78,6 +78,126 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "422":
           $ref: "#/components/responses/DomainError"
+  /documents/redactions:
+    post:
+      summary: Redact and store a document
+      description: Redacts document text, persists the redacted document in SQLite, and indexes applied redaction terms for exact-match search.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoredRedactionRequest"
+      responses:
+        "201":
+          description: Stored document created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredDocumentWithKey"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /documents:
+    get:
+      summary: Search stored documents
+      parameters:
+        - name: redactedTerm
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Exact redacted term lookup. Matching is normalized to lowercase.
+      responses:
+        "200":
+          description: Matching stored documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [documents]
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StoredDocument"
+  /documents/{id}:
+    get:
+      summary: Retrieve a stored redacted document
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Stored redacted document.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredDocument"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+  /documents/{id}/redactions:
+    get:
+      summary: Retrieve redactions applied to a stored document
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Applied redactions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [redactions]
+                properties:
+                  redactions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RedactionEntry"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+  /documents/{id}/unredactions:
+    post:
+      summary: Unredact a stored document
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key:
+                  type: string
+      responses:
+        "200":
+          description: Stored document restored with the provided key.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnredactionResponse"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+        "422":
+          $ref: "#/components/responses/DomainError"
+  /documents/{id}/audit-events:
+    get:
+      summary: Retrieve local prototype audit events for a stored document
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Audit events captured by the SQLite prototype.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [auditEvents]
+                properties:
+                  auditEvents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AuditEvent"
 components:
   parameters:
     RequestId:
@@ -87,6 +207,13 @@ components:
       schema:
         type: string
       description: Optional caller-provided correlation id.
+    DocumentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Stored document id.
   headers:
     RequestId:
       description: Request correlation id.
@@ -101,6 +228,12 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
     DomainError:
       description: Redaction domain error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    DocumentNotFound:
+      description: Stored document was not found.
       content:
         application/json:
           schema:
@@ -171,3 +304,66 @@ components:
               type: string
             requestId:
               type: string
+    StoredRedactionRequest:
+      allOf:
+        - $ref: "#/components/schemas/RedactionRequest"
+        - type: object
+          properties:
+            metadata:
+              $ref: "#/components/schemas/DocumentMetadata"
+    DocumentMetadata:
+      type: object
+      properties:
+        title:
+          type: string
+        classification:
+          type: string
+        ownerId:
+          type: string
+    StoredDocument:
+      type: object
+      required: [id, title, classification, ownerId, redactedText, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        title:
+          type: [string, "null"]
+        classification:
+          type: [string, "null"]
+        ownerId:
+          type: [string, "null"]
+        redactedText:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    StoredDocumentWithKey:
+      allOf:
+        - $ref: "#/components/schemas/StoredDocument"
+        - type: object
+          required: [key, redactions]
+          properties:
+            key:
+              type: string
+            redactions:
+              type: array
+              items:
+                $ref: "#/components/schemas/RedactionEntry"
+    AuditEvent:
+      type: object
+      required: [id, documentId, action, metadata, createdAt]
+      properties:
+        id:
+          type: string
+        documentId:
+          type: [string, "null"]
+        action:
+          type: string
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time

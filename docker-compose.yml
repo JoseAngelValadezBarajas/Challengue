@@ -5,8 +5,11 @@ services:
       target: api
     environment:
       PORT: 4000
+      SQLITE_PATH: /app/data/redactions.sqlite
     ports:
       - "4000:4000"
+    volumes:
+      - api-data:/app/data
 
   web:
     build:
@@ -18,3 +21,6 @@ services:
       - "5173:5173"
     depends_on:
       - api
+
+volumes:
+  api-data:

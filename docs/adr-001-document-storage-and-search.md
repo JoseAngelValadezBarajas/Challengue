@@ -10,7 +10,7 @@ Part 3 asks how the system would store redacted documents and make them searchab
 
 ## Decision
 
-Use an API-backed document service with durable relational storage for document metadata and redaction events, plus a search index optimized for keyword lookup.
+Use an API-backed document service with durable relational storage for document metadata and redaction events, plus a search index optimized for keyword lookup. The repository includes a SQLite implementation for local demonstration; the production target remains PostgreSQL as the source of truth.
 
 ```mermaid
 flowchart LR
@@ -24,6 +24,7 @@ flowchart LR
 
 ## Storage Model
 
+- The implemented prototype uses SQLite for local persistence and exact-match lookup by normalized redacted term.
 - Store canonical document records in PostgreSQL.
 - Store redacted text separately from restoration material.
 - Store redaction events with document id, normalized redacted term, original term, position, timestamp, and actor metadata.

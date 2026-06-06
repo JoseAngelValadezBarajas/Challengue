@@ -28,6 +28,7 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - A single-pass scanner is easy to reason about and test. For very large term dictionaries, a trie or Aho-Corasick matcher would reduce repeated term checks.
 - Replacing every match with the same token keeps the output simple, but unredaction depends on placeholder order and placeholder count.
 - The API is stateless for Parts 1 and 2, which makes local demo simple. Part 3 would introduce persistence, authorization, and indexing.
+- The Part 3 prototype uses SQLite to show real persistence and searchable document boundaries without requiring an external database service.
 
 ## Edge Cases Covered
 
@@ -48,3 +49,4 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - Add OpenAPI-based contract tests.
 - Consider whole-word and case-insensitive matching options if product requirements demand them.
 - Use event-driven indexing for stored documents and redacted keyword search.
+- Replace the SQLite repository with PostgreSQL for multi-instance production deployments.

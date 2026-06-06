@@ -3,6 +3,8 @@ import express, { type ErrorRequestHandler } from "express";
 import { randomUUID } from "node:crypto";
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
 import { ZodError, z } from "zod";
+import { createDocumentRouter } from "./documents/routes.js";
+import { SqliteDocumentRepository } from "./documents/sqliteDocumentRepository.js";
 
 const redactRequestSchema = z.object({
   terms: z.string().min(1, "terms is required"),
@@ -14,8 +16,9 @@ const unredactRequestSchema = z.object({
   documentText: z.string(),
 });
 
-export function createApp() {
+export function createApp(options: { databasePath?: string } = {}) {
   const app = express();
+  const documentRepository = new SqliteDocumentRepository(options.databasePath ?? process.env.SQLITE_PATH ?? "data/redactions.sqlite");
 
   app.use(cors());
   app.use((request, response, next) => {
@@ -65,6 +68,8 @@ export function createApp() {
       next(error);
     }
   });
+
+  app.use("/documents", createDocumentRouter(documentRepository));
 
   app.use(errorHandler);
 

@@ -52,6 +52,25 @@ curl -X POST http://localhost:4000/unredactions \
   -d "{\"key\":\"<key>\",\"documentText\":\"XXXX with XXXX\"}"
 ```
 
+## Stored Document Demo
+
+Part 3 is implemented as a lightweight SQLite prototype for local demo purposes. The production architecture remains PostgreSQL plus a protected search index as described in the ADR.
+
+```bash
+curl -X POST http://localhost:4000/documents/redactions \
+  -H "Content-Type: application/json" \
+  -d "{\"terms\":\"beer\",\"documentText\":\"The agent ordered beer\",\"metadata\":{\"title\":\"Demo briefing\",\"classification\":\"secret\",\"ownerId\":\"demo-user\"}}"
+```
+
+```bash
+curl "http://localhost:4000/documents?redactedTerm=beer"
+curl "http://localhost:4000/documents/<document-id>"
+curl "http://localhost:4000/documents/<document-id>/redactions"
+curl -X POST http://localhost:4000/documents/<document-id>/unredactions \
+  -H "Content-Type: application/json" \
+  -d "{\"key\":\"<key>\"}"
+```
+
 ## Design Decisions
 
 - Redaction matching is case-sensitive by default.
@@ -61,6 +80,7 @@ curl -X POST http://localhost:4000/unredactions \
 - The unredaction key is intentionally not cryptographic. It is a Base64URL-encoded payload containing the original redacted values in document order.
 - The core logic is pure TypeScript in `packages/domain` so the CLI, API, and UI all exercise the same behavior.
 - The API includes request IDs in headers and error payloads to make local debugging and production-style tracing easier.
+- Stored-document endpoints use SQLite as a local persistence prototype. The repository boundary is intentionally isolated so it can be replaced by PostgreSQL in production.
 
 ## API Contract
 
@@ -73,6 +93,8 @@ See `docs/technical-walkthrough.md` for the process, trade-offs, edge cases, and
 ## Security Note
 
 The restoration key is deliberately not secure because the assignment states that true cryptography is not required. Base64URL is encoding, not encryption. A production system should keep restoration material encrypted, access-controlled, audited, and separate from search indexes.
+
+The SQLite prototype stores restoration material locally to support demo unredaction and redaction inspection. That is acceptable for this exercise but would be replaced with KMS-backed envelope encryption and stricter access policies in production.
 
 ## Part 3
 
