@@ -1,0 +1,33 @@
+{
+  "name": "meltwater-redaction-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional full-stack solution for the Meltwater technical exercise.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev:api": "npm run dev -w @meltwater-redaction/api",
+    "dev:web": "npm run dev -w @meltwater-redaction/web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "cli": "npm run dev -w @meltwater-redaction/cli --"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.28.0",
+    "@types/node": "^22.15.30",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "eslint": "^9.28.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.33.1",
+    "vitest": "^4.1.8"
+  }
+}
