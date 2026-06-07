@@ -38,6 +38,20 @@ export const UI_MESSAGES = {
   STORED_DETAIL_EMPTY: "Select a stored document to inspect redactions and restoration behavior.",
   TXT_FILE_UNSUPPORTED: "Only .txt files are supported.",
   TXT_FILE_READ_FAILED: "Unable to read the selected text file.",
+  RESTORATION_BUNDLE_UNSUPPORTED: "Only restoration .txt files are supported.",
+  RESTORATION_BUNDLE_INVALID: "The selected restoration bundle is invalid.",
+  RESTORATION_BUNDLE_READ_FAILED: "Unable to read the selected restoration bundle.",
 } as const;
 
 export const TXT_FILE_ACCEPT = ".txt,text/plain" as const;
+
+export const RESTORATION_BUNDLE_ACCEPT = ".txt,text/plain" as const;
+
+export const DOWNLOAD_FILENAMES = {
+  RESTORATION_BUNDLE: "redaction-restoration-bundle.txt",
+  UNREDACTED_DOCUMENT: "unredacted-document.txt",
+} as const;
+
+export const MIME_TYPES = {
+  TEXT: "text/plain;charset=utf-8",
+} as const;

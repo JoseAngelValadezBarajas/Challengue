@@ -1,0 +1,11 @@
+MELTWATER_RESTORATION_BUNDLE_V1
+CREATED_AT: 2026-06-07T00:00:00.000Z
+KEY:
+eyJ2ZXJzaW9uIjoxLCJ2YWx1ZXMiOlsiSGVsbG8gd29ybGQiLCJCb3N0b24gUmVkIFNveCIsIlBlcHBlcm9uaSBQaXp6YSIsIkNoZWVzZSBQaXp6YSIsImJlZXIiXX0
+REDACTED_TEXT:
+XXXX from headquarters.
+
+The field team watched the XXXX game while waiting for the contact.
+Dinner included XXXX, XXXX, and XXXX.
+
+This message should redact both single keywords and quoted phrases.

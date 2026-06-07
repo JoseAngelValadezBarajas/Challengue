@@ -1,7 +1,9 @@
-import { RotateCcw } from "lucide-react";
+import { Download, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { unredactDocument } from "../api.js";
-import { UI_MESSAGES } from "../constants/webConstants.js";
+import { DOWNLOAD_FILENAMES, MIME_TYPES, UI_MESSAGES } from "../constants/webConstants.js";
+import { downloadTextFile } from "../utils/downloadUtils.js";
+import { RestorationBundleInput } from "./RestorationBundleInput.js";
 import { ResultPanel } from "./ResultPanel.js";
 
 interface UnredactPanelProps {
@@ -38,11 +40,20 @@ export function UnredactPanel({ draft }: UnredactPanelProps) {
     }
   }
 
+  function handleBundleLoaded(bundle: { key: string; redactedText: string }) {
+    setKey(bundle.key);
+    setDocumentText(bundle.redactedText);
+    setUnredactedText("");
+  }
+
   return (
     <form className="panel-grid" onSubmit={handleSubmit}>
       <div className="input-column">
         <label>
-          Restoration key
+          <span className="label-row">
+            Restoration key
+            <RestorationBundleInput onBundleLoaded={handleBundleLoaded} onError={setError} />
+          </span>
           <input value={key} onChange={(event) => setKey(event.target.value)} />
         </label>
         <label>
@@ -60,6 +71,18 @@ export function UnredactPanel({ draft }: UnredactPanelProps) {
         title="Unredacted output"
         emptyText={UI_MESSAGES.UNREDACT_EMPTY}
         resultText={unredactedText}
+        action={
+          unredactedText ? (
+            <button
+              className="secondary-action"
+              onClick={() => downloadTextFile(DOWNLOAD_FILENAMES.UNREDACTED_DOCUMENT, unredactedText, MIME_TYPES.TEXT)}
+              type="button"
+            >
+              <Download size={18} aria-hidden="true" />
+              Download .txt
+            </button>
+          ) : null
+        }
       />
     </form>
   );

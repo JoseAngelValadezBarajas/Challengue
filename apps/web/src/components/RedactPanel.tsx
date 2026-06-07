@@ -1,7 +1,9 @@
-import { ArrowRight, FileLock2 } from "lucide-react";
+import { ArrowRight, Download, FileLock2 } from "lucide-react";
 import { useState } from "react";
 import { redactDocument, type RedactionResponse } from "../api.js";
-import { REDACT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
+import { DOWNLOAD_FILENAMES, MIME_TYPES, REDACT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
+import { downloadTextFile } from "../utils/downloadUtils.js";
+import { serializeRestorationBundle } from "../utils/restorationBundleUtils.js";
 import { RedactionTable } from "./RedactionTable.js";
 import { ResultPanel } from "./ResultPanel.js";
 import { TxtFileInput } from "./TxtFileInput.js";
@@ -60,10 +62,20 @@ export function RedactPanel({ onMoveToUnredact }: RedactPanelProps) {
         footer={result ? `${result.redactions.length} redaction${result.redactions.length === 1 ? "" : "s"} applied` : ""}
         action={
           result ? (
-            <button className="secondary-action" onClick={() => onMoveToUnredact(result)} type="button">
-              <ArrowRight size={18} aria-hidden="true" />
-              Send to unredact
-            </button>
+            <div className="action-row">
+              <button
+                className="secondary-action"
+                onClick={() => downloadTextFile(DOWNLOAD_FILENAMES.RESTORATION_BUNDLE, serializeRestorationBundle(result), MIME_TYPES.TEXT)}
+                type="button"
+              >
+                <Download size={18} aria-hidden="true" />
+                Download bundle
+              </button>
+              <button className="secondary-action" onClick={() => onMoveToUnredact(result)} type="button">
+                <ArrowRight size={18} aria-hidden="true" />
+                Send to unredact
+              </button>
+            </div>
           ) : null
         }
       />

@@ -9,6 +9,7 @@ The assignment asks for a demoable program that redacts keywords and quoted phra
 - Keep parsing, redaction, key encoding, and unredaction in `packages/domain`.
 - Use the same domain package from API, CLI, and UI-backed workflows to avoid duplicated behavior.
 - Treat `.txt` files as an input convenience that is converted to plain text before entering the domain layer.
+- Treat downloadable restoration bundles as UI-level packaging for the redacted text plus restoration key.
 - Generate a Base64URL key containing the original redacted values in document order.
 - Restore by replacing `XXXX` placeholders sequentially from the decoded key.
 - Prioritize longer terms first so `"Boston Red Sox"` wins over `Boston` when both are present.
@@ -31,6 +32,7 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - The API is stateless for Parts 1 and 2, which makes local demo simple. Part 3 would introduce persistence, authorization, and indexing.
 - The Part 3 prototype uses SQLite to show real persistence and searchable document boundaries without requiring an external database service.
 - `.txt` loading is intentionally handled at the adapter layer. The API stays text-based, which keeps the core contract stable and avoids multipart ingestion complexity that the assignment does not require.
+- Restoration bundle files use a small text format for demo portability. They are not a security mechanism and would be replaced by protected restoration material in a production service.
 
 ## Edge Cases Covered
 
@@ -43,6 +45,7 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - Placeholder/key count mismatch.
 - Invalid API payloads.
 - CLI `.txt` file input.
+- UI restoration bundle load/download flow.
 
 ## Production Hardening
 

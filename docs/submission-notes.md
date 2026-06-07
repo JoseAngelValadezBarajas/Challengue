@@ -10,10 +10,11 @@ This repository implements Parts 1 and 2 as a demoable TypeScript product with a
 2. Start the API and web app with `npm run all`.
 3. Open `http://127.0.0.1:5173`.
 4. Use the `Redact` tab to redact text and generate a restoration key.
-5. Use `Send to unredact` or the `Unredact` tab to restore the document.
-6. Optionally load a `.txt` file in the `Redact` or `Documents` tabs instead of pasting text.
-7. Use the `Documents` tab to store a redacted document, search by redacted term, inspect applied redactions, and restore the stored document.
-8. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
+5. Download the restoration bundle and load it in the `Unredact` tab to restore the document.
+6. Download the restored output as a `.txt` document.
+7. Optionally load a `.txt` file in the `Redact` or `Documents` tabs instead of pasting text.
+8. Use the `Documents` tab to store a redacted document, search by redacted term, inspect applied redactions, and restore the stored document.
+9. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
 
 ## What Was Implemented
 
@@ -23,6 +24,7 @@ This repository implements Parts 1 and 2 as a demoable TypeScript product with a
 - API request IDs, structured request logs, and OpenAPI 3.1 contract.
 - CLI, API, and UI adapters over the same shared domain package.
 - Optional `.txt` file loading in the UI and CLI while keeping the API contract text-based.
+- Downloadable `.txt` restoration bundles and downloadable restored `.txt` outputs in the UI.
 
 ## Key Trade-offs
 
@@ -37,6 +39,7 @@ This repository implements Parts 1 and 2 as a demoable TypeScript product with a
 - The SQLite prototype stores restoration material locally for demonstration.
 - Search is exact-match by normalized redacted term, not full-text ranking.
 - File support is intentionally limited to `.txt`; PDF and DOCX parsing are treated as future ingestion features.
+- Restoration bundles are convenience files for demo portability, not encrypted production artifacts.
 - The UI is optimized for local demonstration rather than large document operations.
 
 ## Production Next Steps

@@ -215,6 +215,12 @@ h3 {
   gap: 10px;
 }
 
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .input-column {
   display: flex;
   flex-direction: column;
@@ -502,6 +508,11 @@ tbody tr:last-child td {
   }
 
   .primary-action {
+    width: 100%;
+  }
+
+  .action-row,
+  .secondary-action {
     width: 100%;
   }
 }

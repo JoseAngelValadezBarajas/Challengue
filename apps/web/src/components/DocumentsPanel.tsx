@@ -1,4 +1,4 @@
-import { ArrowRight, Database, RotateCcw, Search } from "lucide-react";
+import { ArrowRight, Database, Download, RotateCcw, Search } from "lucide-react";
 import { useState } from "react";
 import {
   getStoredDocumentRedactions,
@@ -9,7 +9,9 @@ import {
   type StoredDocumentWithKey,
   unredactStoredDocument,
 } from "../api.js";
-import { DOCUMENT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
+import { DOCUMENT_DEMO_DEFAULTS, DOWNLOAD_FILENAMES, MIME_TYPES, UI_MESSAGES } from "../constants/webConstants.js";
+import { downloadTextFile } from "../utils/downloadUtils.js";
+import { serializeRestorationBundle } from "../utils/restorationBundleUtils.js";
 import { RedactionTable } from "./RedactionTable.js";
 import { TxtFileInput } from "./TxtFileInput.js";
 
@@ -164,14 +166,30 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
             <div className="result-header">
               <h2>{selected.title ?? "Stored document"}</h2>
               {selected.key ? (
-                <button
-                  className="secondary-action"
-                  onClick={() => onMoveToUnredact({ redactedText: selected.redactedText, key: selected.key, redactions: selectedRedactions })}
-                  type="button"
-                >
-                  <ArrowRight size={18} aria-hidden="true" />
-                  Send to unredact
-                </button>
+                <div className="action-row">
+                  <button
+                    className="secondary-action"
+                    onClick={() =>
+                      downloadTextFile(
+                        DOWNLOAD_FILENAMES.RESTORATION_BUNDLE,
+                        serializeRestorationBundle({ redactedText: selected.redactedText, key: selected.key }),
+                        MIME_TYPES.TEXT
+                      )
+                    }
+                    type="button"
+                  >
+                    <Download size={18} aria-hidden="true" />
+                    Download bundle
+                  </button>
+                  <button
+                    className="secondary-action"
+                    onClick={() => onMoveToUnredact({ redactedText: selected.redactedText, key: selected.key, redactions: selectedRedactions })}
+                    type="button"
+                  >
+                    <ArrowRight size={18} aria-hidden="true" />
+                    Send to unredact
+                  </button>
+                </div>
               ) : null}
             </div>
             <pre>{selected.redactedText}</pre>
@@ -182,6 +200,16 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
               </button>
             </div>
             {storedRestore ? <pre>{storedRestore}</pre> : null}
+            {storedRestore ? (
+              <button
+                className="secondary-action"
+                onClick={() => downloadTextFile(DOWNLOAD_FILENAMES.UNREDACTED_DOCUMENT, storedRestore, MIME_TYPES.TEXT)}
+                type="button"
+              >
+                <Download size={18} aria-hidden="true" />
+                Download restored .txt
+              </button>
+            ) : null}
             {selectedRedactions.length ? <RedactionTable redactions={selectedRedactions} /> : null}
           </>
         ) : (
