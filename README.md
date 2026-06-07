@@ -31,6 +31,23 @@ The API runs on `http://localhost:4000` by default. The web app runs on the Vite
 6. Use `Documents` to store a redacted document in SQLite and search by redacted term.
 7. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
 
+## How To Review This Submission
+
+1. Start with `docs/submission-notes.md` for the reviewer-oriented overview.
+2. Run `npm ci` or `npm run setup`.
+3. Run the verification suite:
+
+```bash
+npm test
+npm run lint
+npm run build
+npm run openapi:validate
+```
+
+4. Run `npm run all` and open `http://127.0.0.1:5173`.
+5. Review `docs/technical-walkthrough.md` for implementation trade-offs.
+6. Review `docs/adr-001-document-storage-and-search.md` for the Part 3 production architecture discussion.
+
 ## Docker Demo
 
 ```bash
@@ -115,6 +132,14 @@ GitHub Actions runs install, lint, tests, build, OpenAPI validation, critical au
 The restoration key is deliberately not secure because the assignment states that true cryptography is not required. Base64URL is encoding, not encryption. A production system should keep restoration material encrypted, access-controlled, audited, and separate from search indexes.
 
 The SQLite prototype stores restoration material locally to support demo unredaction and redaction inspection. That is acceptable for this exercise but would be replaced with KMS-backed envelope encryption and stricter access policies in production.
+
+## Known Limitations
+
+- Matching is case-sensitive and substring-based. This is explicit and deterministic, but a production product might add whole-word or case-insensitive options.
+- The `XXXX` placeholder is fixed by the assignment. If source text already contains `XXXX`, unredaction relies on placeholder count matching the generated key.
+- The restoration key is Base64URL-encoded metadata, not encryption.
+- SQLite is used as a local Part 3 prototype, not as the intended multi-instance production database.
+- Authentication and authorization are not implemented because Parts 1 and 2 are scoped as a local demo. They would be required before exposing stored documents or unredaction externally.
 
 ## Part 3
 
