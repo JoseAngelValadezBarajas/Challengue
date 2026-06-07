@@ -1,4 +1,7 @@
 import { execFile } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 
@@ -21,6 +24,32 @@ describe("redaction CLI", () => {
 
     expect(payload.redactedText).toBe("XXXX at noon");
     expect(payload.key).toEqual(expect.any(String));
+  });
+
+  it("redacts document text from a .txt file", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "redaction-cli-"));
+    const filePath = join(tempDir, "briefing.txt");
+
+    try {
+      await writeFile(filePath, "beer at noon", "utf8");
+
+      const { stdout } = await execFileAsync("node", [
+        ...cliCommand,
+        "redact",
+        "--terms",
+        "beer",
+        "--file",
+        filePath,
+        "--json",
+      ]);
+
+      const payload = JSON.parse(stdout) as { redactedText: string; key: string };
+
+      expect(payload.redactedText).toBe("XXXX at noon");
+      expect(payload.key).toEqual(expect.any(String));
+    } finally {
+      await rm(tempDir, { force: true, recursive: true });
+    }
   });
 
   it("unredacts document text as JSON", async () => {
@@ -63,6 +92,22 @@ describe("redaction CLI", () => {
       ])
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("INVALID_KEY"),
+    });
+  });
+
+  it("returns an error for unsupported file extensions", async () => {
+    await expect(
+      execFileAsync("node", [
+        ...cliCommand,
+        "redact",
+        "--terms",
+        "beer",
+        "--file",
+        "briefing.md",
+        "--json",
+      ])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("Only .txt files are supported."),
     });
   });
 });

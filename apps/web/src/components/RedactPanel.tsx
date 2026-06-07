@@ -4,6 +4,7 @@ import { redactDocument, type RedactionResponse } from "../api.js";
 import { REDACT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
 import { RedactionTable } from "./RedactionTable.js";
 import { ResultPanel } from "./ResultPanel.js";
+import { TxtFileInput } from "./TxtFileInput.js";
 
 interface RedactPanelProps {
   onMoveToUnredact: (result: RedactionResponse) => void;
@@ -38,7 +39,10 @@ export function RedactPanel({ onMoveToUnredact }: RedactPanelProps) {
           <input value={terms} onChange={(event) => setTerms(event.target.value)} />
         </label>
         <label>
-          Document text
+          <span className="label-row">
+            Document text
+            <TxtFileInput onError={setError} onFileLoaded={setDocumentText} />
+          </span>
           <textarea value={documentText} onChange={(event) => setDocumentText(event.target.value)} rows={12} />
         </label>
         <button className="primary-action" disabled={loading} type="submit">

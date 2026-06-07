@@ -36,4 +36,8 @@ export const UI_MESSAGES = {
   UNREDACT_EMPTY: "Paste a key and redacted text to restore the original document.",
   DOCUMENTS_EMPTY: "Store or search documents to inspect the SQLite prototype.",
   STORED_DETAIL_EMPTY: "Select a stored document to inspect redactions and restoration behavior.",
+  TXT_FILE_UNSUPPORTED: "Only .txt files are supported.",
+  TXT_FILE_READ_FAILED: "Unable to read the selected text file.",
 } as const;
+
+export const TXT_FILE_ACCEPT = ".txt,text/plain" as const;

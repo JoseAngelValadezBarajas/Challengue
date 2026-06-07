@@ -28,8 +28,9 @@ The API runs on `http://localhost:4000` by default. The web app runs on the Vite
 3. Open `http://127.0.0.1:5173`.
 4. Use `Redact` to mask a document and generate a key.
 5. Use `Send to unredact` to restore the generated document.
-6. Use `Documents` to store a redacted document in SQLite and search by redacted term.
-7. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
+6. Optionally load a `.txt` file in the `Redact` or `Documents` tabs to populate the document text.
+7. Use `Documents` to store a redacted document in SQLite and search by redacted term.
+8. Run `npm test`, `npm run lint`, `npm run build`, and `npm run openapi:validate`.
 
 ## How To Review This Submission
 
@@ -61,6 +62,13 @@ Docker exposes the API on `http://localhost:4000` and the web app on `http://loc
 ```bash
 npm run cli -- redact --terms "Hello,beer" --text "Hello from headquarters with beer"
 npm run cli -- unredact --key "<key>" --text "XXXX from headquarters with XXXX"
+```
+
+The CLI can also read text documents from disk:
+
+```bash
+npm run cli -- redact --terms "Hello,beer" --file "./briefing.txt"
+npm run cli -- unredact --key "<key>" --file "./redacted-briefing.txt"
 ```
 
 Use `--json` on either command for machine-readable output.
@@ -104,6 +112,7 @@ curl -X POST http://localhost:4000/documents/<document-id>/unredactions \
 - Keywords are separated by spaces or commas.
 - Phrases can use straight quotes (`"`, `'`) or typographic quotes.
 - Phrases and longer terms are matched before shorter terms to avoid partial replacements.
+- Text input can be provided directly or loaded from `.txt` files in the web UI and CLI.
 - The unredaction key is intentionally not cryptographic. It is a Base64URL-encoded payload containing the original redacted values in document order.
 - The core logic is pure TypeScript in `packages/domain` so the CLI, API, and UI all exercise the same behavior.
 - The API includes request IDs in headers and error payloads to make local debugging and production-style tracing easier.
@@ -139,6 +148,7 @@ The SQLite prototype stores restoration material locally to support demo unredac
 - The `XXXX` placeholder is fixed by the assignment. If source text already contains `XXXX`, unredaction relies on placeholder count matching the generated key.
 - The restoration key is Base64URL-encoded metadata, not encryption.
 - SQLite is used as a local Part 3 prototype, not as the intended multi-instance production database.
+- File loading is intentionally limited to `.txt`; DOCX/PDF ingestion would require a separate parsing pipeline.
 - Authentication and authorization are not implemented because Parts 1 and 2 are scoped as a local demo. They would be required before exposing stored documents or unredaction externally.
 
 ## Part 3

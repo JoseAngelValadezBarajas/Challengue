@@ -8,6 +8,7 @@ The assignment asks for a demoable program that redacts keywords and quoted phra
 
 - Keep parsing, redaction, key encoding, and unredaction in `packages/domain`.
 - Use the same domain package from API, CLI, and UI-backed workflows to avoid duplicated behavior.
+- Treat `.txt` files as an input convenience that is converted to plain text before entering the domain layer.
 - Generate a Base64URL key containing the original redacted values in document order.
 - Restore by replacing `XXXX` placeholders sequentially from the decoded key.
 - Prioritize longer terms first so `"Boston Red Sox"` wins over `Boston` when both are present.
@@ -29,6 +30,7 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - Replacing every match with the same token keeps the output simple, but unredaction depends on placeholder order and placeholder count.
 - The API is stateless for Parts 1 and 2, which makes local demo simple. Part 3 would introduce persistence, authorization, and indexing.
 - The Part 3 prototype uses SQLite to show real persistence and searchable document boundaries without requiring an external database service.
+- `.txt` loading is intentionally handled at the adapter layer. The API stays text-based, which keeps the core contract stable and avoids multipart ingestion complexity that the assignment does not require.
 
 ## Edge Cases Covered
 
@@ -40,6 +42,7 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - Invalid keys.
 - Placeholder/key count mismatch.
 - Invalid API payloads.
+- CLI `.txt` file input.
 
 ## Production Hardening
 
@@ -50,3 +53,4 @@ These rules are intentionally explicit because the assignment leaves casing, wor
 - Consider whole-word and case-insensitive matching options if product requirements demand them.
 - Use event-driven indexing for stored documents and redacted keyword search.
 - Replace the SQLite repository with PostgreSQL for multi-instance production deployments.
+- Add a dedicated ingestion pipeline for DOCX/PDF if non-text document formats become a product requirement.

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
-import { CLI_ERROR_CODE, CLI_USAGE, REDACT_USAGE, UNREDACT_USAGE } from "./constants/cliConstants.js";
+import { readFileSync } from "node:fs";
+import { CLI_ERROR_CODE, CLI_USAGE, REDACT_USAGE, TXT_EXTENSION, UNREDACT_USAGE } from "./constants/cliConstants.js";
 import type { CliOptions } from "./interfaces/cliInterfaces.js";
 
 function main(argv: string[]) {
@@ -8,11 +9,13 @@ function main(argv: string[]) {
 
   try {
     if (options.command === "redact") {
-      if (!options.terms || options.text === undefined) {
+      const documentText = resolveDocumentText(options);
+
+      if (!options.terms || documentText === undefined) {
         throw new Error(REDACT_USAGE);
       }
 
-      const result = redactDocument(options.terms, options.text);
+      const result = redactDocument(options.terms, documentText);
       print(options.json, result, [
         ["Redacted text", result.redactedText],
         ["Key", result.key],
@@ -22,11 +25,13 @@ function main(argv: string[]) {
     }
 
     if (options.command === "unredact") {
-      if (!options.key || options.text === undefined) {
+      const documentText = resolveDocumentText(options);
+
+      if (!options.key || documentText === undefined) {
         throw new Error(UNREDACT_USAGE);
       }
 
-      const result = unredactDocument(options.key, options.text);
+      const result = unredactDocument(options.key, documentText);
       print(options.json, result, [["Unredacted text", result.unredactedText]]);
       return;
     }
@@ -75,6 +80,12 @@ function parseArgs(argv: string[]): CliOptions {
       continue;
     }
 
+    if (arg === "--file") {
+      options.file = readOptionValue(rest, index, arg);
+      index += 1;
+      continue;
+    }
+
     if (arg === "--key") {
       options.key = readOptionValue(rest, index, arg);
       index += 1;
@@ -85,6 +96,22 @@ function parseArgs(argv: string[]): CliOptions {
   }
 
   return options;
+}
+
+function resolveDocumentText(options: CliOptions): string | undefined {
+  if (options.text !== undefined && options.file !== undefined) {
+    throw new Error("Use either --text or --file, not both.");
+  }
+
+  if (options.file === undefined) {
+    return options.text;
+  }
+
+  if (!options.file.toLowerCase().endsWith(TXT_EXTENSION)) {
+    throw new Error("Only .txt files are supported.");
+  }
+
+  return readFileSync(options.file, "utf8");
 }
 
 function readOptionValue(args: string[], index: number, option: string): string {

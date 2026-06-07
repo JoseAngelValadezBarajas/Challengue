@@ -231,6 +231,41 @@ label {
   font-weight: 800;
 }
 
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.file-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #b7c7c3;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #20363a;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.file-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 input,
 textarea {
   width: 100%;
@@ -459,6 +494,11 @@ tbody tr:last-child td {
   .metadata-grid,
   .search-row {
     grid-template-columns: 1fr;
+  }
+
+  .label-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .primary-action {

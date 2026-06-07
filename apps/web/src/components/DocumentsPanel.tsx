@@ -11,6 +11,7 @@ import {
 } from "../api.js";
 import { DOCUMENT_DEMO_DEFAULTS, UI_MESSAGES } from "../constants/webConstants.js";
 import { RedactionTable } from "./RedactionTable.js";
+import { TxtFileInput } from "./TxtFileInput.js";
 
 interface DocumentsPanelProps {
   onMoveToUnredact: (result: RedactionResponse) => void;
@@ -108,7 +109,10 @@ export function DocumentsPanel({ onMoveToUnredact }: DocumentsPanelProps) {
           <input value={terms} onChange={(event) => setTerms(event.target.value)} />
         </label>
         <label>
-          Document text
+          <span className="label-row">
+            Document text
+            <TxtFileInput onError={setError} onFileLoaded={setDocumentText} />
+          </span>
           <textarea value={documentText} onChange={(event) => setDocumentText(event.target.value)} rows={8} />
         </label>
         <div className="metadata-grid">
