@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { redactDocument, RedactionError, unredactDocument } from "@meltwater-redaction/domain";
 import { readFileSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
 import { CLI_ERROR_CODE, CLI_USAGE, REDACT_USAGE, TXT_EXTENSION, UNREDACT_USAGE } from "./constants/cliConstants.js";
 import type { CliOptions } from "./interfaces/cliInterfaces.js";
 
@@ -111,7 +112,15 @@ function resolveDocumentText(options: CliOptions): string | undefined {
     throw new Error("Only .txt files are supported.");
   }
 
-  return readFileSync(options.file, "utf8");
+  return readFileSync(resolveFilePath(options.file), "utf8");
+}
+
+function resolveFilePath(filePath: string): string {
+  if (isAbsolute(filePath)) {
+    return filePath;
+  }
+
+  return resolve(process.env.INIT_CWD ?? process.cwd(), filePath);
 }
 
 function readOptionValue(args: string[], index: number, option: string): string {

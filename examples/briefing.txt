@@ -1,0 +1,6 @@
+Hello world from headquarters.
+
+The field team watched the Boston Red Sox game while waiting for the contact.
+Dinner included Pepperoni Pizza, Cheese Pizza, and beer.
+
+This message should redact both single keywords and quoted phrases.

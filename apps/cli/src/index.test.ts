@@ -52,6 +52,28 @@ describe("redaction CLI", () => {
     }
   });
 
+  it("resolves .txt files relative to the npm invocation directory", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "redaction-cli-init-cwd-"));
+    const filePath = join(tempDir, "briefing.txt");
+
+    try {
+      await writeFile(filePath, "beer at noon", "utf8");
+
+      const { stdout } = await execFileAsync(
+        "node",
+        [...cliCommand, "redact", "--terms", "beer", "--file", "briefing.txt", "--json"],
+        { env: { ...process.env, INIT_CWD: tempDir } }
+      );
+
+      const payload = JSON.parse(stdout) as { redactedText: string; key: string };
+
+      expect(payload.redactedText).toBe("XXXX at noon");
+      expect(payload.key).toEqual(expect.any(String));
+    } finally {
+      await rm(tempDir, { force: true, recursive: true });
+    }
+  });
+
   it("unredacts document text as JSON", async () => {
     const redaction = await execFileAsync("node", [
       ...cliCommand,
